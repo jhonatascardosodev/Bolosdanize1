@@ -1,0 +1,41 @@
+# 📦 Requisitos para rodar o projeto Bolos da Nize
+# 
+# Este arquivo lista os requisitos e dependências do projeto
+# Para instalação completa, veja REQUIREMENTS.md
+
+# ============================================
+# REQUISITOS DO SISTEMA
+# ============================================
+# 1. Node.js ^20.19.0 ou >=22.12.0
+#    Download: https://nodejs.org/
+#
+# 2. pnpm (gerenciador de pacotes)
+#    Instalação: npm install -g pnpm
+#
+# ============================================
+# DEPENDÊNCIAS PRINCIPAIS (Produção)
+# ============================================
+vue==^3.5.18
+vuetify==^3.9.0-beta.1
+
+# ============================================
+# DEPENDÊNCIAS DE DESENVOLVIMENTO
+# ============================================
+@mdi/font==^7.4.47
+@tailwindcss/postcss==^4.1.12
+@vitejs/plugin-vue==^6.0.1
+autoprefixer==^10.4.21
+postcss==^8.5.6
+tailwindcss==^4.1.12
+vite==^7.0.6
+vite-plugin-vue-devtools==^8.0.0
+
+# ============================================
+# COMANDOS DE INSTALAÇÃO
+# ============================================
+# 1. Instalar Node.js: https://nodejs.org/
+# 2. Instalar pnpm: npm install -g pnpm
+# 3. Instalar dependências: pnpm install
+# 4. Rodar projeto: pnpm dev
+#
+# Para mais detalhes, consulte REQUIREMENTS.md

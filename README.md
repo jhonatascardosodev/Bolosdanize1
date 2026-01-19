@@ -103,12 +103,18 @@ pnpm preview
 ### Estrutura do Projeto
 ```
 src/
-├── components/          # Componentes Vue
-│   ├── BoloCard.vue    # Card de produto
-│   └── icons/          # Ícones customizados
-├── assets/             # Imagens e estilos
-├── plugins/            # Configurações (Vuetify)
-└── App.vue            # Componente principal
+├── components/                    # Componentes Vue
+│   ├── HeroSection.vue           # Seção inicial/hero
+│   ├── SobreSection.vue          # Seção sobre a empresa
+│   ├── BolosPersonalizadosSection.vue  # Seção de bolos personalizados
+│   ├── CardapioSection.vue       # Catálogo de bolos
+│   ├── ContatoSection.vue        # Informações de contato
+│   └── CarrinhoDrawer.vue        # Drawer do carrinho de compras
+├── plugins/                      # Configurações
+│   └── vuetify.js                # Configuração do Vuetify
+├── style.css                     # Estilos globais com Tailwind
+├── App.vue                       # Componente principal
+└── main.js                       # Ponto de entrada da aplicação
 ```
 
 ### Scripts Disponíveis
