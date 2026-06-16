@@ -3,17 +3,17 @@
     <v-container>
       <v-row>
         <v-col cols="12" class="text-center mb-8">
-          <h2 class="section-title font-destaque mb-4">Bolos Personalizados</h2>
-          <div class="divider mx-auto mb-4"></div>
-          <p class="subtitle">Cobertos e confeitados em chantilly</p>
-          <p class="text-caption text-grey">💡 Dica: Você pode escolher o mesmo sabor 2 vezes!</p>
+          <h2 class="section-title mb-3">Bolos Personalizados</h2>
+          <div class="section-divider mb-4"></div>
+          <p class="section-subtitle">Cobertos e confeitados em chantilly</p>
+          <p class="tip-text">Você pode escolher o mesmo sabor duas vezes</p>
         </v-col>
       </v-row>
 
       <v-row>
         <v-col cols="12" md="6" class="mb-6">
           <v-card class="pa-6" elevation="2" rounded>
-            <h3 class="mb-4 font-destaque text-h5">Tamanhos Disponíveis</h3>
+            <h3 class="card-heading mb-4">Tamanhos disponíveis</h3>
             <v-radio-group v-model="selectedSize" class="mb-4">
               <v-radio
                 v-for="size in sizes"
@@ -28,8 +28,8 @@
 
         <v-col cols="12" md="6">
           <v-card class="pa-6" elevation="2" rounded>
-            <h3 class="mb-4 font-destaque text-h5">Escolha os 2 Sabores</h3>
-            <p class="mb-4 text-caption">
+            <h3 class="card-heading mb-4">Escolha os 2 sabores</h3>
+            <p class="mb-4 helper-text">
               Selecione 2 sabores para seu bolo (pode escolher o mesmo sabor duas vezes)
             </p>
             
@@ -82,7 +82,7 @@
       <v-row>
         <v-col cols="12" md="8" class="mx-auto">
           <v-card class="pa-6 mb-6" elevation="2" rounded>
-            <h3 class="mb-4 font-destaque text-h6">Informações do Topper do Bolo</h3>
+            <h3 class="card-heading mb-4">Informações do topper</h3>
             
             <v-row>
               <v-col cols="12" md="4">
@@ -157,7 +157,7 @@
               </p>
             </div>
             <div class="mt-3">
-              <span class="text-h5 font-weight-bold">Total: R$ {{ totalPrice.toFixed(2) }}</span>
+              <span class="price-text">Total: R$ {{ totalPrice.toFixed(2) }}</span>
             </div>
           </div>
 
@@ -299,44 +299,37 @@ const addToCart = () => {
 
 <style scoped>
 .bolos-section {
-  background: linear-gradient(135deg, #FDF2F8 0%, #ffffff 100%);
+  background: #faf8f7;
   min-height: 100vh;
 }
 
-.section-title {
-  font-size: 3rem;
-  color: #4b2c2c;
-  font-weight: 600;
+.card-heading {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
 }
 
-.subtitle {
-  font-size: 1.1rem;
-  color: #4b2c2c;
+.tip-text {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+  margin-top: 0.5rem;
 }
 
-.divider {
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(to right, #D4A5A5, #9CAF88);
-  border-radius: 2px;
+.helper-text {
+  font-size: 0.9rem;
+  color: var(--color-text-soft);
+  line-height: 1.55;
 }
 
 .total-price {
-  color: #4b2c2c;
+  color: var(--color-text);
 }
 
 .error-text {
-  color: #d32f2f;
-  font-size: 0.9rem;
-}
-
-.font-destaque {
-  font-family: 'Playfair Display', serif;
-}
-
-@media (max-width: 768px) {
-  .section-title {
-    font-size: 2rem;
-  }
+  color: #c45c5c;
+  font-size: 0.875rem;
 }
 </style>

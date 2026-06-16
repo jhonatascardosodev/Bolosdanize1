@@ -13,6 +13,13 @@ dist
 dist-ssr
 coverage
 *.local
+.env
+
+server/uploads/*
+!server/uploads/.gitkeep
+server/data/*.db
+server/data/*.db-wal
+server/data/*.db-shm
 
 /cypress/videos/
 /cypress/screenshots/

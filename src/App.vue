@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <template v-if="!isAdminRoute">
     <v-app-bar 
       app 
       color="background" 
@@ -14,8 +15,8 @@
             :key="item.name"
             :to="item.to"
             text
-            class="text-primary mx-1"
-            active-class="font-weight-bold"
+            class="nav-link mx-1"
+            active-class="nav-link--active"
           >
             {{ item.title }}
           </v-btn>
@@ -46,8 +47,8 @@
             :key="item.name"
             :to="item.to"
             text
-            class="text-primary mx-1"
-            active-class="font-weight-bold"
+            class="nav-link mx-1"
+            active-class="nav-link--active"
           >
             {{ item.title }}
           </v-btn>
@@ -95,20 +96,27 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
+    </template>
 
-    <v-main>
+    <v-main :class="{ 'admin-main': isAdminRoute }">
       <router-view />
-      
+
       <CarrinhoDrawer
+        v-if="!isAdminRoute"
         v-model="showCart"
         :items="cart"
         @update:items="cart = $event"
         @remove-item="removeFromCart"
-        @finalize-order="finalizeOrder"
+        @order-sent="handleOrderSent"
       />
     </v-main>
 
+    <v-snackbar v-model="orderSnackbar" color="success" timeout="4000">
+      Pedido enviado! Finalize a conversa no WhatsApp.
+    </v-snackbar>
+
     <v-footer
+      v-if="!isAdminRoute"
       color="primary"
       dark
       padless
@@ -119,9 +127,9 @@
         width="100%"
         class="text-center"
       >
-        <v-card-text class="py-4">
+        <v-card-text class="py-4 footer-text">
           <p class="mb-0">
-            © {{ new Date().getFullYear() }} Bolos da Nize - Confeitaria Artesanal | Itacoatiara - AM
+            © {{ new Date().getFullYear() }} Bolos da Nize · Confeitaria artesanal · Itacoatiara, AM
           </p>
         </v-card-text>
       </v-card>
@@ -131,19 +139,20 @@
 
 <script setup>
 import { ref, computed, provide } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import CarrinhoDrawer from './components/CarrinhoDrawer.vue'
 import logo from './assets/logo solo 1.png'
 
-const router = useRouter()
+const route = useRoute()
 const drawer = ref(false)
 const showCart = ref(false)
 const cart = ref([])
+const orderSnackbar = ref(false)
 
 const menuItems = [
   { title: 'Início', to: '/', name: 'Home' },
   { title: 'Sobre', to: '/sobre', name: 'Sobre' },
-  { title: 'Bolos Personalizados', to: '/bolos', name: 'Bolos' },
+  { title: 'Bolos personalizados', to: '/bolos', name: 'Bolos' },
   { title: 'Cardápio', to: '/cardapio', name: 'Cardapio' },
   { title: 'Contato', to: '/contato', name: 'Contato' },
 ]
@@ -151,6 +160,8 @@ const menuItems = [
 const cartItemCount = computed(() => {
   return cart.value.reduce((total, item) => total + item.quantity, 0)
 })
+
+const isAdminRoute = computed(() => route.path.startsWith('/admin'))
 
 const toggleCart = () => {
   showCart.value = !showCart.value
@@ -175,50 +186,9 @@ const removeFromCart = (index) => {
   cart.value.splice(index, 1)
 }
 
-const finalizeOrder = () => {
-  const message = formatWhatsAppMessage()
-  const whatsappNumber = '5592991985973'
-  const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
-  window.open(url, '_blank')
-}
-
-const formatWhatsAppMessage = () => {
-  let message = '🍰 *PEDIDO - BOLOS DA NIZE*\n\n'
-  
-  cart.value.forEach((item, index) => {
-    message += `${index + 1}. ${item.name}\n`
-    if (item.size) {
-      message += `   📏 Tamanho: ${item.size}\n`
-    }
-    if (item.flavors && item.flavors.length > 0) {
-      message += `   🎂 Sabores: ${item.flavors.join(', ')}\n`
-    }
-    if (item.birthdayName) {
-      message += `   👤 Nome: ${item.birthdayName}\n`
-    }
-    if (item.birthdayAge) {
-      message += `   🎂 Idade: ${item.birthdayAge} anos\n`
-    }
-    if (item.cakeTheme) {
-      message += `   🎨 Tema: ${item.cakeTheme}\n`
-    }
-    if (item.birthdayName || item.birthdayAge || item.cakeTheme) {
-      message += `   ✅ Topper incluso\n`
-    }
-    message += `   ✨ Quantidade: ${item.quantity}\n`
-    message += `   💰 Valor: R$ ${item.price.toFixed(2)}\n\n`
-  })
-  
-  const subtotal = cart.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const deliveryFee = 10
-  const total = subtotal + deliveryFee
-  
-  message += `Subtotal: R$ ${subtotal.toFixed(2)}\n`
-  message += `Taxa de entrega: R$ ${deliveryFee.toFixed(2)}\n`
-  message += `*Total: R$ ${total.toFixed(2)}*\n\n`
-  message += 'Aguardo confirmação! 😊'
-  
-  return message
+const handleOrderSent = () => {
+  cart.value = []
+  orderSnackbar.value = true
 }
 
 // Provide para compartilhar funções com páginas
@@ -226,8 +196,22 @@ provide('addToCart', handleAddToCart)
 </script>
 
 <style scoped>
-.font-destaque {
-  font-family: 'Playfair Display', serif;
+.nav-link {
+  color: var(--color-text-soft) !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+}
+
+.nav-link--active {
+  color: var(--color-accent-dark) !important;
+  font-weight: 600 !important;
+}
+
+.footer-text {
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  opacity: 0.95;
 }
 
 .white--text {
@@ -235,8 +219,8 @@ provide('addToCart', handleAddToCart)
 }
 
 .app-bar-custom {
-  background: linear-gradient(135deg, #ffffff 0%, #FDF2F8 100%) !important;
-  border-bottom: 2px solid #E8B4B8;
+  background: #faf8f7 !important;
+  border-bottom: 1px solid rgba(196, 137, 138, 0.2);
   padding: 0 !important;
 }
 

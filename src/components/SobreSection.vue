@@ -3,18 +3,18 @@
     <v-container>
       <v-row>
         <v-col cols="12" class="text-center mb-8">
-          <h2 class="section-title font-destaque mb-4">Sobre Nós</h2>
-          <div class="divider mx-auto"></div>
+          <h2 class="section-title mb-3">Sobre Nós</h2>
+          <div class="section-divider mb-6"></div>
         </v-col>
       </v-row>
 
       <v-row justify="center" class="mb-8">
         <v-col cols="12" md="10">
-          <p class="text-center text-h6 mb-6">
+          <p class="text-center lead-text mb-6">
             Somos uma confeitaria artesanal especializada em criar bolos únicos e deliciosos 
             com muito carinho e dedicação desde 2020.
           </p>
-          <p class="text-center mb-8">
+          <p class="text-center body-text mb-8">
             Localizada em Itacoatiara - AM, a Bolos da Nize transforma momentos especiais 
             em memórias doces através de nossos bolos personalizados e artesanais.
           </p>
@@ -56,58 +56,46 @@ const stats = ref([
 
 <style scoped>
 .sobre-section {
-  background-color: #ffffff;
+  background-color: #faf8f7;
   min-height: 100vh;
   display: flex;
   align-items: center;
 }
 
 .section-title {
-  font-size: 3rem;
-  color: #4b2c2c;
-  font-weight: 600;
-}
-
-.divider {
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(to right, #D4A5A5, #9CAF88);
-  border-radius: 2px;
+  /* usa estilos globais */
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #FDF2F8 0%, #ffffff 100%);
-  transition: transform 0.3s ease;
+  background: #faf8f7;
+  border: 1px solid rgba(196, 137, 138, 0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(74, 63, 63, 0.06);
 }
 
 .stat-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #D4A5A5;
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: var(--color-accent-dark);
+  letter-spacing: -0.02em;
 }
 
 .stat-label {
-  font-size: 1rem;
-  color: #4b2c2c;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
   font-weight: 500;
-}
-
-.font-destaque {
-  font-family: 'Playfair Display', serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 @media (max-width: 768px) {
-  .section-title {
-    font-size: 2rem;
-  }
-  
   .stat-value {
-    font-size: 2rem;
+    font-size: 1.85rem;
   }
 }
 </style>

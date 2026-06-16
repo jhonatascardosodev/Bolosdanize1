@@ -3,15 +3,30 @@
     <v-container>
       <v-row>
         <v-col cols="12" class="text-center mb-8">
-          <h2 class="section-title font-destaque mb-4">Cardápio</h2>
-          <div class="divider mx-auto mb-4"></div>
-          <p class="subtitle">Confira nossos bolos disponíveis</p>
+          <h2 class="section-title mb-3">Cardápio</h2>
+          <div class="section-divider mb-4"></div>
+          <p class="section-subtitle">Confira nossos bolos disponíveis</p>
         </v-col>
       </v-row>
 
-      <v-row>
+      <v-row v-if="productsStore.loading" justify="center" class="py-12">
+        <v-col cols="12" class="text-center">
+          <v-progress-circular indeterminate color="primary" size="48" />
+          <p class="mt-4 text-medium-emphasis">Carregando cardápio...</p>
+        </v-col>
+      </v-row>
+
+      <v-row v-else-if="productsStore.error">
+        <v-col cols="12" class="text-center py-8">
+          <v-alert type="error" variant="tonal" class="mx-auto" max-width="500">
+            {{ productsStore.error }}
+          </v-alert>
+        </v-col>
+      </v-row>
+
+      <v-row v-else>
         <v-col
-          v-for="bolo in bolos"
+          v-for="bolo in cardapioProducts"
           :key="bolo.id"
           cols="12"
           sm="6"
@@ -38,14 +53,14 @@
                 </div>
               </v-img>
             </div>
-            <v-card-title class="font-destaque">
+            <v-card-title>
               {{ bolo.name }}
             </v-card-title>
             <v-card-subtitle>
               {{ bolo.description }}
             </v-card-subtitle>
             <v-card-text>
-              <div class="price">R$ {{ bolo.price.toFixed(2) }}</div>
+              <div class="price-text">R$ {{ bolo.price.toFixed(2) }}</div>
             </v-card-text>
             <v-card-actions>
               <v-spacer />
@@ -70,13 +85,13 @@
           height="300"
           cover
         />
-        <v-card-title class="font-destaque text-h4">
+        <v-card-title class="text-h5">
           {{ selectedBolo.name }}
         </v-card-title>
         <v-card-text>
-          <p class="text-h6 mb-4">{{ selectedBolo.description }}</p>
-          <p class="mb-4">{{ selectedBolo.fullDescription }}</p>
-          <div class="price-large mb-4">R$ {{ selectedBolo.price.toFixed(2) }}</div>
+          <p class="lead-text mb-4">{{ selectedBolo.description }}</p>
+          <p class="body-text mb-4">{{ selectedBolo.fullDescription }}</p>
+          <div class="price-text price-large mb-4">R$ {{ selectedBolo.price.toFixed(2) }}</div>
         </v-card-text>
         <v-card-actions>
           <v-text-field
@@ -103,72 +118,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useProductsStore } from '@/stores/products'
 
 const emit = defineEmits(['add-to-cart'])
 
-const bolos = ref([
-  {
-    id: 1,
-    name: 'Bolo de Brigadeiro',
-    description: 'Delicioso bolo de brigadeiro',
-    fullDescription: 'Bolo macio recheado com brigadeiro cremoso e coberto com granulado.',
-    price: 120,
-    image: null,
-  },
-  {
-    id: 2,
-    name: 'Bolo de Beijinho',
-    description: 'Bolo tradicional de beijinho',
-    fullDescription: 'Bolo fofo com recheio de beijinho e coco ralado.',
-    price: 120,
-    image: null,
-  },
-  {
-    id: 3,
-    name: 'Bolo de Doce de Leite',
-    description: 'Cremoso bolo de doce de leite',
-    fullDescription: 'Bolo especial com camadas de doce de leite cremoso.',
-    price: 130,
-    image: null,
-  },
-  {
-    id: 4,
-    name: 'Bolo de Leite Ninho',
-    description: 'Clássico bolo de leite ninho',
-    fullDescription: 'Bolo macio recheado com creme de leite ninho.',
-    price: 130,
-    image: null,
-  },
-  {
-    id: 5,
-    name: 'Bolo Mousse de Cupuaçu',
-    description: 'Exótico mousse de cupuaçu',
-    fullDescription: 'Bolo com mousse de cupuaçu, fruto típico da Amazônia.',
-    price: 140,
-    image: null,
-  },
-  {
-    id: 6,
-    name: 'Bolo Mousse de Maracujá',
-    description: 'Refrescante mousse de maracujá',
-    fullDescription: 'Bolo com mousse de maracujá azedinho e delicioso.',
-    price: 140,
-    image: null,
-  },
-  {
-    id: 7,
-    name: 'Bolo Três Leites',
-    description: 'Tradicional três leites',
-    fullDescription: 'Bolo úmido feito com três tipos de leite, uma delícia cremosa.',
-    price: 135,
-    image: null,
-  },
-])
+const productsStore = useProductsStore()
+const { cardapioProducts } = storeToRefs(productsStore)
 
 const showModal = ref(false)
 const selectedBolo = ref(null)
 const modalQuantity = ref(1)
+
+onMounted(() => {
+  productsStore.fetchProducts(true)
+})
 
 const openBoloModal = (bolo) => {
   selectedBolo.value = bolo
@@ -197,36 +162,20 @@ const addToCartFromModal = () => {
 
 <style scoped>
 .cardapio-section {
-  background-color: #ffffff;
+  background-color: #faf8f7;
   min-height: 100vh;
-}
-
-.section-title {
-  font-size: 3rem;
-  color: #4b2c2c;
-  font-weight: 600;
-}
-
-.subtitle {
-  font-size: 1.1rem;
-  color: #4b2c2c;
-}
-
-.divider {
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(to right, #D4A5A5, #9CAF88);
-  border-radius: 2px;
 }
 
 .bolo-card {
   height: 100%;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
+  border: 1px solid rgba(196, 137, 138, 0.1);
 }
 
 .bolo-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(74, 63, 63, 0.08);
 }
 
 .bolo-image {
@@ -236,11 +185,8 @@ const addToCartFromModal = () => {
 
 .overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(74, 63, 63, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -252,27 +198,7 @@ const addToCartFromModal = () => {
   opacity: 1;
 }
 
-.price {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #D4A5A5;
-  font-family: 'Playfair Display', serif;
-}
-
 .price-large {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #D4A5A5;
-  font-family: 'Playfair Display', serif;
-}
-
-.font-destaque {
-  font-family: 'Playfair Display', serif;
-}
-
-@media (max-width: 768px) {
-  .section-title {
-    font-size: 2rem;
-  }
+  font-size: 1.75rem;
 }
 </style>

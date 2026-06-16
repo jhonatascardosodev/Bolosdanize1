@@ -10,27 +10,25 @@
               class="hero-logo"
             />
           </div>
-          <p class="hero-subtitle text-h5 mb-8">
-            Bolos Artesanais e Personalizados em Itacoatiara - AM
+          <p class="hero-subtitle mb-8">
+            Bolos artesanais e personalizados · Itacoatiara, AM
           </p>
           <v-btn
             color="accent"
             size="large"
-            rounded
-            class="mr-4 mb-4"
+            class="mr-4 mb-4 hero-btn"
             to="/bolos"
           >
-            Ver Bolos Personalizados
+            Ver bolos personalizados
           </v-btn>
           <v-btn
             color="secondary"
             size="large"
-            rounded
-            outlined
-            class="mb-4"
+            variant="outlined"
+            class="mb-4 hero-btn"
             to="/cardapio"
           >
-            Ver Cardápio
+            Ver cardápio
           </v-btn>
         </v-col>
       </v-row>
@@ -44,7 +42,7 @@ import logo from '../assets/logo solo 1.png'
 
 <style scoped>
 .hero-section {
-  background: linear-gradient(135deg, #ffffff 0%, #FDF2F8 50%, #ffffff 100%);
+  background: #faf8f7;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -54,11 +52,8 @@ import logo from '../assets/logo solo 1.png'
 .hero-section::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(232, 180, 184, 0.1) 0%, transparent 70%);
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(196, 137, 138, 0.06) 0%, transparent 65%);
   pointer-events: none;
 }
 
@@ -83,40 +78,36 @@ import logo from '../assets/logo solo 1.png'
   height: auto;
   display: block;
   margin: 0 auto;
-  filter: drop-shadow(0 8px 24px rgba(212, 165, 165, 0.4));
-  transition: transform 0.3s ease;
-  animation: logoFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 6px 20px rgba(196, 137, 138, 0.25));
+  transition: transform 0.4s ease;
 }
 
 .hero-logo:hover {
-  transform: scale(1.05);
-}
-
-@keyframes logoFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  transform: scale(1.02);
 }
 
 .hero-subtitle {
-  color: #4b2c2c;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
   font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  max-width: 28rem;
 }
 
-.font-destaque {
-  font-family: 'Playfair Display', serif;
+.hero-btn {
+  min-width: 200px;
 }
 
 @media (max-width: 768px) {
   .hero-logo {
     max-width: 250px;
   }
-  
+
   .hero-subtitle {
-    font-size: 1.25rem !important;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
   }
 }
 </style>

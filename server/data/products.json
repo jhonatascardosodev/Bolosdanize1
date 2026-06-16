@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "name": "Bolo de Brigadeiro",
+    "description": "Delicioso bolo de brigadeiro",
+    "fullDescription": "Bolo macio recheado com brigadeiro cremoso e coberto com granulado.",
+    "price": 120,
+    "image": null,
+    "category": "cardapio",
+    "available": true
+  },
+  {
+    "id": 2,
+    "name": "Bolo de Beijinho",
+    "description": "Bolo tradicional de beijinho",
+    "fullDescription": "Bolo fofo com recheio de beijinho e coco ralado.",
+    "price": 120,
+    "image": null,
+    "category": "cardapio",
+    "available": true
+  },
+  {
+    "id": 3,
+    "name": "Bolo de Doce de Leite",
+    "description": "Cremoso bolo de doce de leite",
+    "fullDescription": "Bolo especial com camadas de doce de leite cremoso.",
+    "price": 130,
+    "image": null,
+    "category": "cardapio",
+    "available": true
+  },
+  {
+    "id": 4,
+    "name": "Bolo de Leite Ninho",
+    "description": "Clássico bolo de leite ninho",
+    "fullDescription": "Bolo macio recheado com creme de leite ninho.",
+    "price": 130,
+    "image": null,
+    "category": "cardapio",
+    "available": true
+  },
+  {
+    "id": 5,
+    "name": "Bolo Mousse de Cupuaçu",
+    "description": "Exótico mousse de cupuaçu",
+    "fullDescription": "Bolo com mousse de cupuaçu, fruto típico da Amazônia.",
+    "price": 140,
+    "image": null,
+    "category": "cardapio",
+    "available": true
+  },
+  {
+    "id": 6,
+    "name": "Bolo Mousse de Maracujá",
+    "description": "Refrescante mousse de maracujá",
+    "fullDescription": "Bolo com mousse de maracujá azedinho e delicioso.",
+    "price": 140,
+    "image": null,
+    "category": "cardapio",
+    "available": true
+  },
+  {
+    "id": 7,
+    "name": "Bolo Três Leites",
+    "description": "Tradicional três leites",
+    "fullDescription": "Bolo úmido feito com três tipos de leite, uma delícia cremosa.",
+    "price": 135,
+    "image": null,
+    "category": "cardapio",
+    "available": true
+  }
+]

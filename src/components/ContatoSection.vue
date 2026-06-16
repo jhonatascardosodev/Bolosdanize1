@@ -3,9 +3,9 @@
     <v-container>
       <v-row>
         <v-col cols="12" class="text-center mb-8">
-          <h2 class="section-title font-destaque mb-4">Entre em Contato</h2>
-          <div class="divider mx-auto mb-4"></div>
-          <p class="subtitle">Estamos prontos para tornar seu evento especial!</p>
+          <h2 class="section-title mb-3">Entre em Contato</h2>
+          <div class="section-divider mb-4"></div>
+          <p class="section-subtitle">Estamos prontos para tornar seu evento especial</p>
         </v-col>
       </v-row>
 
@@ -29,7 +29,7 @@
                     <v-icon size="30" color="white">{{ contact.icon }}</v-icon>
                   </v-avatar>
                   <div>
-                    <h3 class="mb-1 font-weight-bold">{{ contact.label }}</h3>
+                    <h3 class="contact-label mb-1">{{ contact.label }}</h3>
                     <a
                       v-if="contact.link"
                       :href="contact.link"
@@ -47,7 +47,7 @@
             <v-divider class="my-6" />
 
             <div class="text-center">
-              <h3 class="mb-4 font-destaque">Horário de Funcionamento</h3>
+              <h3 class="font-display mb-4">Horário de funcionamento</h3>
               <div class="horario">
                 <p><strong>Segunda a Sexta:</strong> 8h às 18h</p>
                 <p><strong>Sábado:</strong> Até meio dia (12h)</p>
@@ -58,8 +58,8 @@
             <v-divider class="my-6" />
 
             <div class="text-center">
-              <h3 class="mb-4 font-destaque">Localização</h3>
-              <p class="mb-4">Itacoatiara - Amazonas</p>
+              <h3 class="font-display mb-4">Localização</h3>
+              <p class="body-text mb-4">Itacoatiara — Amazonas</p>
               <v-btn
                 color="primary"
                 rounded
@@ -130,63 +130,40 @@ const contacts = ref([
 
 <style scoped>
 .contato-section {
-  background: linear-gradient(135deg, #FDF2F8 0%, #ffffff 100%);
+  background: #faf8f7;
   min-height: 100vh;
   display: flex;
   align-items: center;
 }
 
-.section-title {
-  font-size: 3rem;
-  color: #4b2c2c;
+.contact-label {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
   font-weight: 600;
-}
-
-.subtitle {
-  font-size: 1.1rem;
-  color: #4b2c2c;
-}
-
-.divider {
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(to right, #D4A5A5, #9CAF88);
-  border-radius: 2px;
-}
-
-.contact-item {
-  padding: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 .contact-link {
-  color: #4b2c2c;
+  color: var(--color-text);
   text-decoration: none;
-  font-size: 1.1rem;
-  transition: color 0.3s ease;
+  font-size: 1rem;
+  transition: color 0.2s ease;
 }
 
 .contact-link:hover {
-  color: #D4A5A5;
+  color: var(--color-accent-dark);
 }
 
 .contact-value {
-  color: #4b2c2c;
-  font-size: 1.1rem;
+  color: var(--color-text);
+  font-size: 1rem;
 }
 
 .horario p {
   margin: 8px 0;
-  font-size: 1.1rem;
-  color: #4b2c2c;
-}
-
-.font-destaque {
-  font-family: 'Playfair Display', serif;
-}
-
-@media (max-width: 768px) {
-  .section-title {
-    font-size: 2rem;
-  }
+  font-size: 0.975rem;
+  color: var(--color-text-soft);
 }
 </style>

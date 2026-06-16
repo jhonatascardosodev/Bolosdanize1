@@ -8,7 +8,7 @@
     elevation="10"
   >
     <v-card-title class="d-flex justify-space-between align-center pa-4">
-      <span class="font-destaque text-h5">🛒 Carrinho</span>
+      <span class="font-display drawer-title">Carrinho</span>
       <v-btn icon @click="$emit('update:modelValue', false)">
         <v-icon>mdi-close</v-icon>
       </v-btn>
@@ -113,16 +113,61 @@
         </div>
       </div>
 
+      <div class="customer-form mb-4">
+        <p class="form-label mb-3">Seus dados para o pedido</p>
+
+        <v-text-field
+          v-model="customer.name"
+          label="Seu nome *"
+          variant="outlined"
+          density="comfortable"
+          :error-messages="errors.name"
+          hide-details="auto"
+          class="mb-2"
+        />
+
+        <v-text-field
+          v-model="customer.phone"
+          label="WhatsApp / Telefone *"
+          variant="outlined"
+          density="comfortable"
+          placeholder="(92) 99999-9999"
+          :error-messages="errors.phone"
+          hide-details="auto"
+          class="mb-2"
+        />
+
+        <v-text-field
+          v-model="customer.address"
+          label="Endereço de entrega"
+          variant="outlined"
+          density="comfortable"
+          placeholder="Rua, número, bairro"
+          hide-details="auto"
+          class="mb-2"
+        />
+
+        <v-textarea
+          v-model="customer.notes"
+          label="Observações"
+          variant="outlined"
+          density="comfortable"
+          rows="2"
+          placeholder="Ex: entregar após 14h, sem amendoim..."
+          hide-details="auto"
+        />
+      </div>
+
       <v-btn
         color="success"
         size="large"
         block
-        rounded
-        @click="$emit('finalize-order')"
+        :loading="sending"
+        @click="handleFinalize"
         class="mb-2"
       >
-        <v-icon left>mdi-whatsapp</v-icon>
-        Finalizar Pedido no WhatsApp
+        <v-icon start>mdi-whatsapp</v-icon>
+        Enviar pedido no WhatsApp
       </v-btn>
 
       <v-btn
@@ -140,7 +185,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, reactive } from 'vue'
+import { buildOrderMessage, openWhatsAppOrder, DELIVERY_FEE } from '@/utils/whatsapp'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -150,9 +196,22 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue', 'update:items', 'remove-item', 'finalize-order'])
+const emit = defineEmits(['update:modelValue', 'update:items', 'remove-item', 'order-sent'])
 
-const deliveryFee = 10 // Taxa de entrega fixa
+const deliveryFee = DELIVERY_FEE
+const sending = ref(false)
+
+const customer = reactive({
+  name: '',
+  phone: '',
+  address: '',
+  notes: '',
+})
+
+const errors = reactive({
+  name: '',
+  phone: '',
+})
 
 const subtotal = computed(() => {
   return props.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -161,6 +220,42 @@ const subtotal = computed(() => {
 const total = computed(() => {
   return subtotal.value + deliveryFee
 })
+
+function validateCustomer() {
+  errors.name = ''
+  errors.phone = ''
+
+  if (!customer.name.trim()) {
+    errors.name = 'Informe seu nome'
+  }
+
+  if (!customer.phone.trim()) {
+    errors.phone = 'Informe seu telefone'
+  } else if (customer.phone.replace(/\D/g, '').length < 10) {
+    errors.phone = 'Telefone inválido'
+  }
+
+  return !errors.name && !errors.phone
+}
+
+function handleFinalize() {
+  if (!validateCustomer()) return
+
+  sending.value = true
+
+  const message = buildOrderMessage(props.items, { ...customer })
+  openWhatsAppOrder(message)
+
+  emit('order-sent', { ...customer })
+  emit('update:modelValue', false)
+
+  customer.name = ''
+  customer.phone = ''
+  customer.address = ''
+  customer.notes = ''
+
+  sending.value = false
+}
 
 const decreaseQuantity = (index) => {
   const newItems = [...props.items]
@@ -180,7 +275,24 @@ const increaseQuantity = (index) => {
 </script>
 
 <style scoped>
-.font-destaque {
-  font-family: 'Playfair Display', serif;
+.drawer-title {
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.customer-form {
+  padding: 12px;
+  border: 1px solid rgba(196, 137, 138, 0.2);
+  border-radius: 12px;
+  background: #fff;
 }
 </style>
