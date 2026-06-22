@@ -1,5 +1,4 @@
 import express from 'express'
-import cors from 'cors'
 import multer from 'multer'
 import jwt from 'jsonwebtoken'
 import swaggerUi from 'swagger-ui-express'
@@ -8,6 +7,10 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 import swaggerSpec from './swagger.js'
+import { config, validateSecurityConfig, safeCompareStrings, isAllowedImage } from './config.js'
+import { authMiddleware } from './middleware/auth.js'
+import { setupSecurityMiddleware, createUploadsStatic } from './middleware/security.js'
+import { createApiLimiter, createLoginLimiter } from './middleware/rateLimit.js'
 import {
   initDatabase,
   findAllProducts,
@@ -24,9 +27,8 @@ const __dirname = path.dirname(__filename)
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
-const PORT = process.env.PORT || 3001
-const JWT_SECRET = process.env.JWT_SECRET || 'bolosdanize-dev-secret'
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'
+const securityWarnings = validateSecurityConfig()
+securityWarnings.forEach((warning) => console.warn(`[segurança] ${warning}`))
 
 const DATA_DIR = path.join(__dirname, 'data')
 const DATA_FILE = path.join(DATA_DIR, 'products.json')
@@ -55,19 +57,18 @@ function deleteImageFile(imagePath) {
   }
 }
 
-function authMiddleware(req, res, next) {
-  const header = req.headers.authorization
-
-  if (!header?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Não autorizado' })
+function sanitizeFilename(originalName) {
+  const ext = path.extname(originalName).toLowerCase()
+  if (!config.allowedImageExtensions.has(ext)) {
+    return null
   }
 
-  try {
-    jwt.verify(header.slice(7), JWT_SECRET)
-    next()
-  } catch {
-    return res.status(401).json({ error: 'Token inválido ou expirado' })
-  }
+  const unique = `${Date.now()}-${cryptoRandomSuffix()}`
+  return `${unique}${ext}`
+}
+
+function cryptoRandomSuffix() {
+  return Math.random().toString(36).slice(2, 10)
 }
 
 ensureDirectories()
@@ -79,37 +80,47 @@ const storage = multer.diskStorage({
     cb(null, UPLOADS_DIR)
   },
   filename: (_req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
-    const ext = path.extname(file.originalname).toLowerCase()
-    cb(null, `${unique}${ext}`)
+    const filename = sanitizeFilename(file.originalname)
+
+    if (!filename) {
+      cb(new Error('Tipo de arquivo não permitido'))
+      return
+    }
+
+    cb(null, filename)
   },
 })
 
 const upload = multer({
   storage,
-  limits: { fileSize: 2 * 1024 * 1024 },
+  limits: { fileSize: config.uploadMaxBytes, files: 1 },
   fileFilter: (_req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    if (isAllowedImage(file)) {
       cb(null, true)
       return
     }
-    cb(new Error('Apenas imagens são permitidas'))
+    cb(new Error('Apenas imagens JPG, PNG, WebP ou GIF são permitidas'))
   },
 })
 
 const app = express()
+const loginLimiter = createLoginLimiter()
+const apiLimiter = createApiLimiter()
 
-app.use(cors())
-app.use(express.json())
-app.use('/uploads', express.static(UPLOADS_DIR))
+setupSecurityMiddleware(app)
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customSiteTitle: 'Bolos da Nize — API Docs',
-}))
+app.use('/api', apiLimiter)
+app.use('/uploads', createUploadsStatic(UPLOADS_DIR))
 
-app.get('/api-docs.json', (_req, res) => {
-  res.json(swaggerSpec)
-})
+if (config.enableSwagger) {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: 'Bolos da Nize — API Docs',
+  }))
+
+  app.get('/api-docs.json', (_req, res) => {
+    res.json(swaggerSpec)
+  })
+}
 
 app.get('/api/health', (_req, res) => {
   try {
@@ -118,21 +129,32 @@ app.get('/api/health', (_req, res) => {
       status: 'ok',
       database: 'sqlite',
       products: total,
+      environment: config.isProduction ? 'production' : 'development',
     })
   } catch {
     res.status(503).json({ status: 'error', database: 'sqlite' })
   }
 })
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', loginLimiter, (req, res) => {
   const { password } = req.body
 
-  if (password !== ADMIN_PASSWORD) {
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Senha é obrigatória' })
+  }
+
+  if (!safeCompareStrings(password, config.adminPassword)) {
     return res.status(401).json({ error: 'Senha incorreta' })
   }
 
-  const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '7d' })
-  res.json({ token })
+  const token = jwt.sign({ role: 'admin' }, config.jwtSecret, {
+    expiresIn: config.jwtExpiresIn,
+  })
+
+  res.json({
+    token,
+    expiresIn: config.jwtExpiresIn,
+  })
 })
 
 app.get('/api/products', (req, res) => {
@@ -157,17 +179,21 @@ app.post('/api/products', authMiddleware, upload.single('image'), (req, res) => 
     return res.status(400).json({ error: 'Nome e descrição são obrigatórios' })
   }
 
+  if (name.trim().length > 120 || description.trim().length > 255) {
+    return res.status(400).json({ error: 'Texto muito longo' })
+  }
+
   const numericPrice = Number(price)
-  if (!numericPrice || numericPrice <= 0) {
+  if (!numericPrice || numericPrice <= 0 || numericPrice > 99999) {
     return res.status(400).json({ error: 'Preço inválido' })
   }
 
   const product = createProduct(db, {
     name: name.trim(),
     description: description.trim(),
-    fullDescription: fullDescription?.trim() || description.trim(),
+    fullDescription: (fullDescription?.trim() || description.trim()).slice(0, 2000),
     price: numericPrice,
-    category: category || 'cardapio',
+    category: category === 'personalizado' ? 'personalizado' : 'cardapio',
     available: parseBoolean(available),
     image: req.file ? `/uploads/${req.file.filename}` : null,
   })
@@ -191,7 +217,7 @@ app.put('/api/products/:id', authMiddleware, upload.single('image'), (req, res) 
 
   if (price !== undefined) {
     const numericPrice = Number(price)
-    if (!numericPrice || numericPrice <= 0) {
+    if (!numericPrice || numericPrice <= 0 || numericPrice > 99999) {
       return res.status(400).json({ error: 'Preço inválido' })
     }
   }
@@ -201,7 +227,12 @@ app.put('/api/products/:id', authMiddleware, upload.single('image'), (req, res) 
     description: description?.trim(),
     fullDescription: fullDescription?.trim(),
     price: price !== undefined ? Number(price) : undefined,
-    category,
+    category:
+      category === undefined
+        ? undefined
+        : category === 'personalizado'
+          ? 'personalizado'
+          : 'cardapio',
     available: available !== undefined ? parseBoolean(available, current.available) : undefined,
   }
 
@@ -238,23 +269,35 @@ app.delete('/api/products/:id', authMiddleware, (req, res) => {
   res.status(204).send()
 })
 
-app.use((err, _req, res, _next) => {
+app.use((err, _req, res, next) => {
+  if (err.message === 'Origem não permitida pelo CORS') {
+    return res.status(403).json({ error: 'Origem não permitida' })
+  }
+
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ error: 'Imagem deve ter no máximo 2MB' })
     }
-    return res.status(400).json({ error: err.message })
+    return res.status(400).json({ error: 'Upload inválido' })
   }
 
   if (err) {
-    return res.status(400).json({ error: err.message || 'Erro na requisição' })
+    const message = config.isProduction ? 'Erro na requisição' : err.message
+    return res.status(400).json({ error: message || 'Erro na requisição' })
   }
 
-  res.status(500).json({ error: 'Erro interno' })
+  next()
 })
 
-app.listen(PORT, () => {
-  console.log(`API rodando em http://localhost:${PORT}`)
-  console.log(`Swagger UI: http://localhost:${PORT}/api-docs`)
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Rota não encontrada' })
+})
+
+app.listen(config.port, () => {
+  console.log(`API rodando em http://localhost:${config.port}`)
+  if (config.enableSwagger) {
+    console.log(`Swagger UI: http://localhost:${config.port}/api-docs`)
+  }
   console.log(`Banco SQLite: ${DB_FILE}`)
+  console.log(`Ambiente: ${config.isProduction ? 'production' : 'development'}`)
 })

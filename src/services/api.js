@@ -36,6 +36,13 @@ async function request(path, options = {}) {
 
   const data = await response.json().catch(() => ({}))
 
+  if (response.status === 401) {
+    clearToken()
+    const error = new Error(data.error || 'Sessão expirada. Faça login novamente.')
+    error.status = 401
+    throw error
+  }
+
   if (!response.ok) {
     throw new Error(data.error || 'Erro na requisição')
   }

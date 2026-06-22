@@ -200,7 +200,12 @@ const handleLogout = () => {
 onMounted(async () => {
   try {
     await productsStore.fetchProducts()
-  } catch {
+  } catch (err) {
+    if (err.status === 401) {
+      authStore.handleUnauthorized()
+      router.push('/admin/login')
+      return
+    }
     showSnackbar('Erro ao carregar produtos. Verifique se o servidor está rodando.', 'error')
   }
 })

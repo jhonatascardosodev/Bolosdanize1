@@ -12,6 +12,7 @@ export const useAuthStore = defineStore('auth', () => {
       isAuthenticated.value = true
       return true
     } catch {
+      isAuthenticated.value = false
       return false
     }
   }
@@ -19,6 +20,10 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     clearToken()
     isAuthenticated.value = false
+  }
+
+  function handleUnauthorized() {
+    logout()
   }
 
   function restoreSession() {
@@ -30,5 +35,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     restoreSession,
+    handleUnauthorized,
   }
 })

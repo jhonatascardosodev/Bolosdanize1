@@ -58,7 +58,7 @@
             @click="toggleCart"
             class="ml-2 text-primary"
           >
-            <v-badge :content="cartItemCount" :value="cartItemCount > 0" color="accent">
+            <v-badge :content="cartStore.itemCount" :value="cartStore.itemCount > 0" color="accent">
               <v-icon color="primary">mdi-cart</v-icon>
             </v-badge>
           </v-btn>
@@ -71,7 +71,7 @@
             @click="toggleCart"
             class="text-primary"
           >
-            <v-badge :content="cartItemCount" :value="cartItemCount > 0" color="accent">
+            <v-badge :content="cartStore.itemCount" :value="cartStore.itemCount > 0" color="accent">
               <v-icon color="primary">mdi-cart</v-icon>
             </v-badge>
           </v-btn>
@@ -104,12 +104,18 @@
       <CarrinhoDrawer
         v-if="!isAdminRoute"
         v-model="showCart"
-        :items="cart"
-        @update:items="cart = $event"
-        @remove-item="removeFromCart"
+        :items="cartStore.items"
+        @update:items="cartStore.updateItems($event)"
+        @remove-item="cartStore.removeItem($event)"
         @order-sent="handleOrderSent"
       />
+
+      <WhatsAppFab v-if="!isAdminRoute" />
     </v-main>
+
+    <v-snackbar v-model="cartSnackbar" color="primary" timeout="2500">
+      Item adicionado ao carrinho
+    </v-snackbar>
 
     <v-snackbar v-model="orderSnackbar" color="success" timeout="4000">
       Pedido enviado! Finalize a conversa no WhatsApp.
@@ -140,13 +146,17 @@
 <script setup>
 import { ref, computed, provide } from 'vue'
 import { useRoute } from 'vue-router'
+import { useCartStore } from '@/stores/cart'
 import CarrinhoDrawer from './components/CarrinhoDrawer.vue'
+import WhatsAppFab from './components/WhatsAppFab.vue'
 import logo from './assets/logo solo 1.png'
 
 const route = useRoute()
+const cartStore = useCartStore()
+
 const drawer = ref(false)
 const showCart = ref(false)
-const cart = ref([])
+const cartSnackbar = ref(false)
 const orderSnackbar = ref(false)
 
 const menuItems = [
@@ -157,10 +167,6 @@ const menuItems = [
   { title: 'Contato', to: '/contato', name: 'Contato' },
 ]
 
-const cartItemCount = computed(() => {
-  return cart.value.reduce((total, item) => total + item.quantity, 0)
-})
-
 const isAdminRoute = computed(() => route.path.startsWith('/admin'))
 
 const toggleCart = () => {
@@ -168,26 +174,13 @@ const toggleCart = () => {
 }
 
 const handleAddToCart = (item) => {
-  const existingItem = cart.value.find(cartItem => 
-    cartItem.id === item.id && 
-    JSON.stringify(cartItem.flavors) === JSON.stringify(item.flavors)
-  )
-
-  if (existingItem) {
-    existingItem.quantity += item.quantity
-  } else {
-    cart.value.push({ ...item })
-  }
-  
+  cartStore.addItem(item)
+  cartSnackbar.value = true
   showCart.value = true
 }
 
-const removeFromCart = (index) => {
-  cart.value.splice(index, 1)
-}
-
 const handleOrderSent = () => {
-  cart.value = []
+  cartStore.clear()
   orderSnackbar.value = true
 }
 
