@@ -1,131 +1,112 @@
-# 🎂 Bolos da Nize - Site da Confeitaria
+# Bolos da Nize
 
-Site profissional da confeitaria **Bolos da Nize** localizada em Itacoatiara - AM. Desenvolvido com Vue.js 3, Vuetify e TailwindCSS.
+Site da confeitaria **Bolos da Nize** (Itacoatiara - AM) com cardápio online, carrinho e área administrativa.
 
-## ✨ Funcionalidades
+## Stack
 
-### 🏠 **Páginas Principais**
-- **Hero Section**: Logo e apresentação da confeitaria
-- **Sobre**: História e estatísticas da empresa
-- **Bolos Personalizados**: Sistema de seleção de tamanhos e sabores
-- **Cardápio**: Catálogo completo de bolos com filtros
-- **Contato**: Informações de contato e redes sociais
+| Camada | Tecnologias |
+|--------|-------------|
+| Frontend | Vue 3, Vite, Vuetify, Tailwind, Pinia, Vue Router |
+| Backend | Express, SQLite (`node:sqlite`), JWT, Multer, Swagger |
+| Deploy | Vercel (frontend), Docker (API) |
 
-### 🛒 **Sistema de Carrinho**
-- **Seleção de Sabores**: Modal para escolher até 2 sabores (pode repetir)
-- **Carrinho Interativo**: Adicionar, remover e alterar quantidades
-- **Integração WhatsApp**: Finalizar pedidos diretamente via WhatsApp
-- **Feedback Visual**: Animações e notificações
+## Instalação
 
-### 🎨 **Design Responsivo**
-- **Mobile First**: Totalmente adaptável para dispositivos móveis
-- **Paleta de Cores**: Rosa e verde oliva da marca
-- **Tipografia**: Playfair Display e Poppins
-- **Animações**: Transições suaves e hover effects
-
-## 🚀 Tecnologias Utilizadas
-
-- **Vue.js 3** - Framework JavaScript
-- **Vuetify 3** - Biblioteca de componentes Material Design
-- **TailwindCSS 4** - Framework CSS utilitário
-- **Vite** - Build tool e dev server
-- **Material Design Icons** - Ícones
-
-## 📦 Instalação e Execução
-
-### Pré-requisitos
-- Node.js (versão 20.19.0 ou superior)
-- pnpm (gerenciador de pacotes)
-
-### Instalação
 ```bash
-# Instalar dependências
-pnpm install
+# Instalar tudo (frontend + backend)
+pnpm install:all
 
-# Executar em modo desenvolvimento
-pnpm dev
-
-# Build para produção
-pnpm build
-
-# Preview da build
-pnpm preview
+# Copiar variáveis de ambiente
+cp .env.example .env
 ```
 
-## 🎯 Funcionalidades Específicas
+## Desenvolvimento
 
-### Bolos Personalizados
-- **4 Tamanhos**: 18cm, 20cm, 23cm, 27cm
-- **7 Sabores**: Brigadeiro, Beijinho, Doce de leite, Leite ninho, Mousse de Cupuaçu, Mousse de Maracujá, Três leites
-- **Seleção Flexível**: Escolha 2 sabores diferentes ou 1 sabor duplicado
-- **Preços**: R$ 110,00 a R$ 200,00
+```bash
+# API + site juntos
+pnpm dev:all
 
-### Sistema de Carrinho
-- **Hover Effects**: Overlay nos cards de bolos
-- **Modal de Sabores**: Interface intuitiva para seleção
-- **Carrinho Lateral**: Drawer com gestão completa de itens
-- **WhatsApp Integration**: Mensagem formatada com pedido completo
-
-## 📱 Responsividade
-
-- **Desktop**: Layout completo com sidebar e navegação horizontal
-- **Tablet**: Adaptação automática de grids e espaçamentos
-- **Mobile**: Menu hambúrguer e layout empilhado
-
-## 🎨 Identidade Visual
-
-### Cores
-- **Rosa Principal**: #D4A5A5
-- **Rosa Claro**: #E8B4B8
-- **Verde Oliva**: #9CAF88
-- **Fundo Suave**: #FDF2F8
-
-### Tipografia
-- **Títulos**: Playfair Display (serif)
-- **Corpo**: Poppins (sans-serif)
-
-## 📞 Contato
-
-- **WhatsApp**: (92) 99198-5973
-- **Instagram**: [@bolosdanizeoficial](https://www.instagram.com/bolosdanizeoficial)
-- **Localização**: Itacoatiara - AM
-- **Horário**: Seg-Sex 8h-18h, Sáb 8h-14h
-
-## 📈 Estatísticas
-
-- **Fundação**: 2020
-- **Experiência**: 5+ anos
-- **Bolos Produzidos**: 500+
-- **Tipo**: 100% Artesanal
-
-## 🛠️ Desenvolvimento
-
-### Estrutura do Projeto
-```
-src/
-├── components/                    # Componentes Vue
-│   ├── HeroSection.vue           # Seção inicial/hero
-│   ├── SobreSection.vue          # Seção sobre a empresa
-│   ├── BolosPersonalizadosSection.vue  # Seção de bolos personalizados
-│   ├── CardapioSection.vue       # Catálogo de bolos
-│   ├── ContatoSection.vue        # Informações de contato
-│   └── CarrinhoDrawer.vue        # Drawer do carrinho de compras
-├── plugins/                      # Configurações
-│   └── vuetify.js                # Configuração do Vuetify
-├── style.css                     # Estilos globais com Tailwind
-├── App.vue                       # Componente principal
-└── main.js                       # Ponto de entrada da aplicação
+# Ou separado:
+pnpm dev:server   # API em http://localhost:3001
+pnpm dev          # Site em http://localhost:5173
 ```
 
-### Scripts Disponíveis
-- `pnpm dev` - Servidor de desenvolvimento
-- `pnpm build` - Build para produção
-- `pnpm preview` - Preview da build
+- **Admin:** `/admin/login` (senha padrão dev: `admin123`)
+- **Swagger:** http://localhost:3001/api-docs
+- **Health check:** http://localhost:3001/api/health
 
-## 📄 Licença
+## Scripts de manutenção
 
-Este projeto é propriedade da **Bolos da Nize** - Confeitaria Artesanal.
+| Comando | Descrição |
+|---------|-----------|
+| `pnpm lint` | Verifica erros de código (ESLint) |
+| `pnpm format` | Formata arquivos (Prettier) |
+| `pnpm format:check` | Só verifica formatação |
+| `pnpm test` | Testes do backend |
+| `pnpm check` | Testes + build de produção |
+| `pnpm build` | Build do frontend |
+
+## Estrutura do projeto
+
+```
+Bolosdanize1/
+├── src/                    # Frontend Vue
+│   ├── components/         # Seções e UI reutilizável
+│   ├── pages/              # Rotas (Home, Cardápio, Admin...)
+│   ├── stores/             # Estado Pinia (cart, products, auth)
+│   ├── services/api.js     # Cliente HTTP da API
+│   ├── constants/          # Chaves e valores compartilhados
+│   └── utils/              # WhatsApp, SEO, etc.
+├── server/                 # Backend Express
+│   ├── routes/             # Rotas por domínio (auth, products, health)
+│   ├── middleware/         # Auth, segurança, erros, rate limit
+│   ├── lib/                # Upload, validação, arquivos
+│   ├── test/               # Testes automatizados
+│   ├── db.js               # SQLite e queries
+│   ├── app.js              # Montagem do Express
+│   └── index.js            # Entrada do servidor
+├── scripts/dev-all.js      # Sobe API + frontend
+└── .env.example            # Variáveis documentadas
+```
+
+## Onde alterar cada coisa
+
+| Precisa mudar... | Arquivo |
+|------------------|---------|
+| Produtos do cardápio | Admin `/admin` ou API `/api/products` |
+| Número do WhatsApp | `.env` → `VITE_WHATSAPP_NUMBER` |
+| Senha do admin | `.env` → `ADMIN_PASSWORD` |
+| Cores e tipografia | `src/style.css`, `src/plugins/vuetify.js` |
+| Rotas do site | `src/router/index.js` |
+| Regras da API | `server/routes/` e `server/lib/validators.js` |
+| Segurança (CORS, rate limit) | `server/config.js`, `server/middleware/` |
+
+## Variáveis de ambiente
+
+Veja `.env.example` para a lista completa. Em produção, defina obrigatoriamente:
+
+- `JWT_SECRET` (mín. 32 caracteres)
+- `ADMIN_PASSWORD` (mín. 8 caracteres)
+- `CORS_ORIGINS` (URL do site)
+- `NODE_ENV=production`
+
+## Testes
+
+```bash
+pnpm test
+```
+
+Cobrem validação de produtos e health check da API. Antes de deploy:
+
+```bash
+pnpm check
+```
+
+## Contato
+
+- **WhatsApp:** (92) 99198-5973
+- **Instagram:** [@bolosdanizeoficial](https://www.instagram.com/bolosdanizeoficial)
 
 ---
 
-*Desenvolvido com ❤️ para a confeitaria Bolos da Nize*
+*Bolos da Nize — Confeitaria Artesanal*

@@ -1,5 +1,7 @@
+import { STORAGE_KEYS } from '@/constants'
+
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
-const TOKEN_KEY = 'bolosdanize-token'
+const TOKEN_KEY = STORAGE_KEYS.TOKEN
 
 export function getToken() {
   return sessionStorage.getItem(TOKEN_KEY)

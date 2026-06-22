@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+import { STORAGE_KEYS } from '@/constants'
 
-const STORAGE_KEY = 'bolosdanize-cart'
+const STORAGE_KEY = STORAGE_KEYS.CART
 
 function loadCart() {
   try {
