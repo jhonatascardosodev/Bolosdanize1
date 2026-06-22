@@ -1,10 +1,13 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import compression from 'compression'
 import { config } from '../config.js'
 
 export function setupSecurityMiddleware(app) {
   app.disable('x-powered-by')
+
+  app.use(compression())
 
   app.use(
     helmet({
@@ -36,5 +39,8 @@ export function createUploadsStatic(uploadsDir) {
     dotfiles: 'deny',
     index: false,
     fallthrough: false,
+    maxAge: config.uploadsCacheMaxAge,
+    etag: true,
+    lastModified: true,
   })
 }

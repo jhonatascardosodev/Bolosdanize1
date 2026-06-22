@@ -14,6 +14,7 @@ import { createApiLimiter, createLoginLimiter } from './middleware/rateLimit.js'
 import {
   initDatabase,
   findAllProducts,
+  findProductsPaginated,
   findProductById,
   createProduct,
   updateProduct,
@@ -159,6 +160,33 @@ app.post('/api/auth/login', loginLimiter, (req, res) => {
 
 app.get('/api/products', (req, res) => {
   const availableOnly = req.query.available === 'true'
+  const hasPagination = req.query.page !== undefined || req.query.limit !== undefined
+
+  if (hasPagination) {
+    const page = Math.max(1, Number(req.query.page) || 1)
+    const limit = Math.min(
+      config.pagination.maxLimit,
+      Math.max(1, Number(req.query.limit) || config.pagination.defaultLimit)
+    )
+
+    const result = findProductsPaginated(db, {
+      availableOnly,
+      category: req.query.category,
+      page,
+      limit,
+    })
+
+    return res.json({
+      data: result.data,
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      },
+    })
+  }
+
   res.json(findAllProducts(db, availableOnly))
 })
 
@@ -293,7 +321,7 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Rota não encontrada' })
 })
 
-app.listen(config.port, () => {
+const server = app.listen(config.port, () => {
   console.log(`API rodando em http://localhost:${config.port}`)
   if (config.enableSwagger) {
     console.log(`Swagger UI: http://localhost:${config.port}/api-docs`)
@@ -301,3 +329,14 @@ app.listen(config.port, () => {
   console.log(`Banco SQLite: ${DB_FILE}`)
   console.log(`Ambiente: ${config.isProduction ? 'production' : 'development'}`)
 })
+
+function shutdown(signal) {
+  console.log(`\n${signal} recebido. Encerrando servidor...`)
+  server.close(() => {
+    console.log('Servidor encerrado.')
+    process.exit(0)
+  })
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))

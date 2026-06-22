@@ -20,6 +20,11 @@ export const config = {
     loginMax: Number(process.env.RATE_LIMIT_LOGIN_MAX) || 5,
     apiMax: Number(process.env.RATE_LIMIT_API_MAX) || 120,
   },
+  pagination: {
+    defaultLimit: Number(process.env.PAGINATION_DEFAULT_LIMIT) || 20,
+    maxLimit: Number(process.env.PAGINATION_MAX_LIMIT) || 100,
+  },
+  uploadsCacheMaxAge: isProduction ? '7d' : 0,
   bodyLimit: '100kb',
   uploadMaxBytes: 2 * 1024 * 1024,
   allowedImageExtensions: new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']),

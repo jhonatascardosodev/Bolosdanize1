@@ -50,6 +50,17 @@ async function request(path, options = {}) {
   return data
 }
 
+export function normalizeProductsResponse(data) {
+  if (Array.isArray(data)) {
+    return { items: data, pagination: null }
+  }
+
+  return {
+    items: data.data || [],
+    pagination: data.pagination || null,
+  }
+}
+
 export const api = {
   login(password) {
     return request('/auth/login', {
@@ -59,9 +70,15 @@ export const api = {
     })
   },
 
-  getProducts(availableOnly = false) {
-    const query = availableOnly ? '?available=true' : ''
-    return request(`/products${query}`)
+  getProducts(availableOnly = false, { page, limit, category } = {}) {
+    const params = new URLSearchParams()
+    if (availableOnly) params.set('available', 'true')
+    if (page) params.set('page', String(page))
+    if (limit) params.set('limit', String(limit))
+    if (category) params.set('category', category)
+
+    const query = params.toString()
+    return request(`/products${query ? `?${query}` : ''}`)
   },
 
   createProduct(product, imageFile) {

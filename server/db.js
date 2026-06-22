@@ -208,6 +208,46 @@ export function findAllProducts(db, availableOnly = false) {
   return db.prepare(query).all().map(mapRow)
 }
 
+export function findProductsPaginated(db, options = {}) {
+  const { availableOnly = false, category, page = 1, limit = 20 } = options
+  const safePage = Math.max(1, page)
+  const safeLimit = Math.max(1, limit)
+  const offset = (safePage - 1) * safeLimit
+
+  const conditions = []
+  const params = []
+
+  if (availableOnly) {
+    conditions.push('available = 1')
+  }
+
+  if (category) {
+    conditions.push('category = ?')
+    params.push(category)
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+  const rows = db
+    .prepare(
+      `SELECT * FROM products ${whereClause} ORDER BY id ASC LIMIT ? OFFSET ?`
+    )
+    .all(...params, safeLimit, offset)
+    .map(mapRow)
+
+  const total = db
+    .prepare(`SELECT COUNT(*) as total FROM products ${whereClause}`)
+    .get(...params).total
+
+  return {
+    data: rows,
+    total,
+    page: safePage,
+    limit: safeLimit,
+    totalPages: Math.ceil(total / safeLimit) || 1,
+  }
+}
+
 export function findProductById(db, id) {
   const row = db.prepare('SELECT * FROM products WHERE id = ?').get(id)
   return mapRow(row)

@@ -27,4 +27,15 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vue: ['vue', 'vue-router', 'pinia'],
+          vuetify: ['vuetify'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 700,
+  },
 })

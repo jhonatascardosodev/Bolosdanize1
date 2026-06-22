@@ -1,14 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../pages/Home.vue'
-import Sobre from '../pages/Sobre.vue'
-import Bolos from '../pages/Bolos.vue'
-import Cardapio from '../pages/Cardapio.vue'
-import Contato from '../pages/Contato.vue'
-import Login from '../pages/Login.vue'
-import Admin from '../pages/Admin.vue'
 import { useAuthStore } from '@/stores/auth'
 import { updatePageMeta } from '@/utils/pageMeta'
 import { getToken } from '@/services/api'
+
+const Home = () => import('../pages/Home.vue')
+const Sobre = () => import('../pages/Sobre.vue')
+const Bolos = () => import('../pages/Bolos.vue')
+const Cardapio = () => import('../pages/Cardapio.vue')
+const Contato = () => import('../pages/Contato.vue')
+const Login = () => import('../pages/Login.vue')
+const Admin = () => import('../pages/Admin.vue')
 
 function isTokenValid() {
   const token = getToken()
@@ -70,6 +71,9 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(_to, _from, savedPosition) {
+    return savedPosition || { top: 0 }
+  },
 })
 
 router.beforeEach((to) => {

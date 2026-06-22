@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { api, resolveImageUrl } from '@/services/api'
+import { api, resolveImageUrl, normalizeProductsResponse } from '@/services/api'
 
 function mapProduct(product) {
   return {
@@ -14,6 +14,7 @@ export const useProductsStore = defineStore('products', () => {
   const products = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const pagination = ref(null)
 
   const availableProducts = computed(() =>
     products.value.filter((product) => product.available !== false)
@@ -31,13 +32,15 @@ export const useProductsStore = defineStore('products', () => {
     return total / products.value.length
   })
 
-  async function fetchProducts(availableOnly = false) {
+  async function fetchProducts(availableOnly = false, options = {}) {
     loading.value = true
     error.value = null
 
     try {
-      const data = await api.getProducts(availableOnly)
-      products.value = data.map(mapProduct)
+      const data = await api.getProducts(availableOnly, options)
+      const { items, pagination: meta } = normalizeProductsResponse(data)
+      products.value = items.map(mapProduct)
+      pagination.value = meta
     } catch (err) {
       error.value = err.message
       throw err
@@ -83,6 +86,7 @@ export const useProductsStore = defineStore('products', () => {
     products,
     loading,
     error,
+    pagination,
     availableProducts,
     cardapioProducts,
     averagePrice,

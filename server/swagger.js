@@ -80,6 +80,25 @@ const swaggerSpec = {
           available: { type: 'boolean', example: true },
         },
       },
+      PaginationMeta: {
+        type: 'object',
+        properties: {
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 20 },
+          total: { type: 'integer', example: 42 },
+          totalPages: { type: 'integer', example: 3 },
+        },
+      },
+      PaginatedProducts: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/Product' },
+          },
+          pagination: { $ref: '#/components/schemas/PaginationMeta' },
+        },
+      },
       ProductInput: {
         type: 'object',
         required: ['name', 'description', 'price'],
@@ -167,16 +186,31 @@ const swaggerSpec = {
             description: 'Filtrar apenas produtos disponíveis',
             schema: { type: 'string', enum: ['true'] },
           },
+          {
+            name: 'page',
+            in: 'query',
+            description: 'Número da página (começa em 1)',
+            schema: { type: 'integer', minimum: 1, default: 1 },
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            description: 'Itens por página (máx. 100)',
+            schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+          },
+          {
+            name: 'category',
+            in: 'query',
+            description: 'Filtrar por categoria',
+            schema: { type: 'string', enum: ['cardapio', 'personalizado'] },
+          },
         ],
         responses: {
           200: {
-            description: 'Lista de produtos',
+            description: 'Lista paginada de produtos',
             content: {
               'application/json': {
-                schema: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/Product' },
-                },
+                schema: { $ref: '#/components/schemas/PaginatedProducts' },
               },
             },
           },
