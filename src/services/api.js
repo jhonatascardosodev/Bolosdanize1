@@ -132,6 +132,18 @@ export const api = {
   deleteProduct(id) {
     return request(`/products/${id}`, { method: 'DELETE' })
   },
+
+  getCustomCakes() {
+    return request('/custom-cakes')
+  },
+
+  updateCustomCakes(config) {
+    return request('/custom-cakes', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    })
+  },
 }
 
 export function resolveImageUrl(imagePath) {

@@ -1,12 +1,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/stores/auth'
 import { useProductsStore } from '@/stores/products'
+import ProductImage from '@/components/ProductImage.vue'
+import AdminCustomCakes from '@/components/AdminCustomCakes.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const productsStore = useProductsStore()
+const { mobile } = useDisplay()
+
+const adminTab = ref('products')
 
 const showDialog = ref(false)
 const editingProduct = ref(null)
@@ -277,6 +283,13 @@ onMounted(async () => {
         </v-col>
       </v-row>
 
+      <v-tabs v-model="adminTab" color="primary" class="mb-4">
+        <v-tab value="products">Produtos do cardápio</v-tab>
+        <v-tab value="custom">Bolos personalizados</v-tab>
+      </v-tabs>
+
+      <v-window v-model="adminTab">
+        <v-window-item value="products">
       <v-row>
         <v-col cols="12">
           <v-card elevation="2">
@@ -290,7 +303,7 @@ onMounted(async () => {
             <v-divider />
 
             <v-card-text class="pa-0">
-              <v-table v-if="productsStore.products.length > 0">
+              <v-table v-if="!mobile && productsStore.products.length > 0">
                 <thead>
                   <tr>
                     <th>Imagem</th>
@@ -305,14 +318,16 @@ onMounted(async () => {
                 <tbody>
                   <tr v-for="product in productsStore.products" :key="product.id">
                     <td>
-                      <v-avatar size="48" rounded="lg">
-                        <v-img
-                          v-if="product.image"
+                      <div class="admin-table-thumb">
+                        <ProductImage
                           :src="product.image"
-                          cover
+                          :alt="product.name"
+                          height="48"
+                          :show-label="false"
+                          compact
+                          :icon-size="22"
                         />
-                        <v-icon v-else color="grey">mdi-image-off</v-icon>
-                      </v-avatar>
+                      </div>
                     </td>
                     <td class="font-weight-medium">{{ product.name }}</td>
                     <td class="text-truncate" style="max-width: 200px;">
@@ -353,7 +368,72 @@ onMounted(async () => {
                 </tbody>
               </v-table>
 
-              <div v-else class="text-center pa-8">
+              <div v-else-if="mobile && productsStore.products.length > 0" class="pa-4 d-flex flex-column gap-3">
+                <v-card
+                  v-for="product in productsStore.products"
+                  :key="product.id"
+                  variant="outlined"
+                  class="admin-product-card"
+                >
+                  <v-card-text>
+                    <div class="d-flex gap-3 align-start mb-3">
+                      <div class="admin-thumb">
+                        <ProductImage
+                          :src="product.image"
+                          :alt="product.name"
+                          height="72"
+                          :show-label="false"
+                          compact
+                          :icon-size="28"
+                        />
+                      </div>
+                      <div class="flex-grow-1">
+                        <div class="font-weight-bold mb-1">{{ product.name }}</div>
+                        <div class="text-caption text-medium-emphasis mb-2">
+                          {{ product.description }}
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 align-center">
+                          <span class="text-primary font-weight-bold">
+                            R$ {{ Number(product.price).toFixed(2) }}
+                          </span>
+                          <v-chip size="x-small" :color="product.category === 'cardapio' ? 'primary' : 'secondary'">
+                            {{ product.category === 'cardapio' ? 'Cardápio' : 'Personalizado' }}
+                          </v-chip>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-center justify-space-between">
+                      <v-switch
+                        :model-value="product.available !== false"
+                        color="success"
+                        hide-details
+                        density="compact"
+                        label="Disponível"
+                        @update:model-value="toggleAvailable(product)"
+                      />
+                      <div>
+                        <v-btn
+                          icon="mdi-pencil"
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          @click="openEditDialog(product)"
+                        />
+                        <v-btn
+                          icon="mdi-delete"
+                          size="small"
+                          variant="text"
+                          color="error"
+                          @click="confirmDelete(product)"
+                        />
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </div>
+
+              <div v-else-if="productsStore.products.length === 0" class="text-center pa-8">
                 <v-icon size="64" color="grey-lighten-1">mdi-cake-variant-outline</v-icon>
                 <p class="text-h6 mt-4">Nenhum produto cadastrado</p>
                 <p class="text-body-2 text-medium-emphasis mb-4">
@@ -367,6 +447,16 @@ onMounted(async () => {
           </v-card>
         </v-col>
       </v-row>
+        </v-window-item>
+
+        <v-window-item value="custom">
+          <v-row>
+            <v-col cols="12">
+              <AdminCustomCakes />
+            </v-col>
+          </v-row>
+        </v-window-item>
+      </v-window>
     </v-container>
 
     <v-dialog v-model="showDialog" max-width="600" persistent>
@@ -382,7 +472,16 @@ onMounted(async () => {
             <v-col cols="12" class="text-center">
               <div class="image-upload-area mb-4">
                 <v-avatar v-if="imagePreview" size="120" rounded="lg" class="mb-3">
-                  <v-img :src="imagePreview" cover />
+                  <v-img v-if="typeof imagePreview === 'string' && imagePreview.startsWith('data:')" :src="imagePreview" cover />
+                  <ProductImage
+                    v-else
+                    :src="imagePreview"
+                    alt="Preview"
+                    height="120"
+                    :show-label="false"
+                    compact
+                    :icon-size="40"
+                  />
                 </v-avatar>
                 <v-avatar v-else size="120" rounded="lg" color="grey-lighten-3" class="mb-3">
                   <v-icon size="48" color="grey">mdi-camera-plus</v-icon>
@@ -529,11 +628,11 @@ onMounted(async () => {
 }
 
 .font-destaque {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-display);
 }
 
 .stat-card {
-  border-left: 4px solid #d4a5a5;
+  border-left: 4px solid var(--color-accent, #c4898a);
 }
 
 .image-upload-area {
@@ -541,6 +640,24 @@ onMounted(async () => {
   border: 2px dashed #e8b4b8;
   border-radius: 12px;
   background: #fdf2f8;
+}
+
+.admin-thumb {
+  width: 72px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-table-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.admin-product-card {
+  border-color: rgba(196, 137, 138, 0.25) !important;
 }
 
 .gap-2 {

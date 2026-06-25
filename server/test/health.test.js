@@ -17,7 +17,7 @@ test('GET /api/health responde ok', async () => {
   fs.mkdirSync(uploadsDir)
 
   const db = initDatabase(dbFile, dataFile)
-  const app = createApp({ db, uploadsDir })
+  const app = createApp({ db, uploadsDir, dataDir: tmpDir })
   const server = app.listen(0)
 
   try {

@@ -4,7 +4,7 @@
     @update:model-value="$emit('update:modelValue', $event)"
     temporary
     location="right"
-    width="400"
+    :width="drawerWidth"
     elevation="10"
   >
     <v-card-title class="d-flex justify-space-between align-center pa-4">
@@ -124,10 +124,11 @@
           :error-messages="errors.name"
           hide-details="auto"
           class="mb-2"
+          @blur="persistCustomer"
         />
 
         <v-text-field
-          v-model="customer.phone"
+          :model-value="customer.phone"
           label="WhatsApp / Telefone *"
           variant="outlined"
           density="comfortable"
@@ -135,6 +136,10 @@
           :error-messages="errors.phone"
           hide-details="auto"
           class="mb-2"
+          inputmode="tel"
+          maxlength="15"
+          @update:model-value="updatePhone"
+          @blur="persistCustomer"
         />
 
         <v-text-field
@@ -145,6 +150,7 @@
           placeholder="Rua, número, bairro"
           hide-details="auto"
           class="mb-2"
+          @blur="persistCustomer"
         />
 
         <v-textarea
@@ -155,6 +161,7 @@
           rows="2"
           placeholder="Ex: entregar após 14h, sem amendoim..."
           hide-details="auto"
+          @blur="persistCustomer"
         />
       </div>
 
@@ -185,8 +192,11 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive } from 'vue'
+import { computed, ref, reactive, onMounted, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { buildOrderMessage, openWhatsAppOrder, DELIVERY_FEE } from '@/utils/whatsapp'
+import { formatPhone, isValidPhone } from '@/utils/phone'
+import { loadCustomer, saveCustomer } from '@/utils/customerStorage'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -197,6 +207,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'update:items', 'remove-item', 'order-sent'])
+
+const { mobile } = useDisplay()
+const drawerWidth = computed(() => (mobile.value ? '100%' : 400))
 
 const deliveryFee = DELIVERY_FEE
 const sending = ref(false)
@@ -212,6 +225,34 @@ const errors = reactive({
   name: '',
   phone: '',
 })
+
+onMounted(() => {
+  const saved = loadCustomer()
+  customer.name = saved.name
+  customer.phone = saved.phone ? formatPhone(saved.phone) : ''
+  customer.address = saved.address
+  customer.notes = saved.notes
+})
+
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (open) {
+      const saved = loadCustomer()
+      if (!customer.name && saved.name) customer.name = saved.name
+      if (!customer.phone && saved.phone) customer.phone = formatPhone(saved.phone)
+      if (!customer.address && saved.address) customer.address = saved.address
+    }
+  }
+)
+
+function updatePhone(value) {
+  customer.phone = formatPhone(value)
+}
+
+function persistCustomer() {
+  saveCustomer(customer)
+}
 
 const subtotal = computed(() => {
   return props.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -231,7 +272,7 @@ function validateCustomer() {
 
   if (!customer.phone.trim()) {
     errors.phone = 'Informe seu telefone'
-  } else if (customer.phone.replace(/\D/g, '').length < 10) {
+  } else if (!isValidPhone(customer.phone)) {
     errors.phone = 'Telefone inválido'
   }
 
@@ -243,16 +284,13 @@ function handleFinalize() {
 
   sending.value = true
 
+  persistCustomer()
+
   const message = buildOrderMessage(props.items, { ...customer })
   openWhatsAppOrder(message)
 
   emit('order-sent', { ...customer })
   emit('update:modelValue', false)
-
-  customer.name = ''
-  customer.phone = ''
-  customer.address = ''
-  customer.notes = ''
 
   sending.value = false
 }

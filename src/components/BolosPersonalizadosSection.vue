@@ -210,7 +210,7 @@
           </p>
           <p class="text-body-1 text-grey-darken-1">
             <v-icon size="small" class="mr-1">mdi-cash</v-icon>
-            Taxa de entrega: R$ 10,00 (fixa)
+            Taxa de entrega: R$ {{ deliveryFee.toFixed(2) }} (fixa)
           </p>
         </v-col>
       </v-row>
@@ -219,26 +219,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { DELIVERY_FEE } from '@/constants'
+import { useCustomCakesStore } from '@/stores/customCakes'
 
 const emit = defineEmits(['add-to-cart'])
 
-const sizes = [
-  { value: '15cm', label: '15 cm', price: 110, serves: '10 a 12 pessoas' },
-  { value: '18cm', label: '18 cm', price: 120, serves: '15 pessoas' },
-  { value: '20cm', label: '20 cm', price: 140, serves: '30 pessoas' },
-  { value: '23cm', label: '23 cm', price: 200, serves: '40 pessoas' },
-]
-
-const flavors = [
-  'Brigadeiro',
-  'Beijinho',
-  'Cupuaçu',
-  'Doce de leite',
-  'Leite ninho',
-  'Maracujá',
-  'Três leites',
-]
+const customCakesStore = useCustomCakesStore()
+const { sizes, flavors } = storeToRefs(customCakesStore)
 
 const selectedSize = ref(null)
 const selectedFlavor1 = ref(null)
@@ -247,7 +236,7 @@ const quantity = ref(1)
 const birthdayName = ref('')
 const birthdayAge = ref(null)
 const cakeTheme = ref('')
-const deliveryFee = 10 // Taxa de entrega fixa
+const deliveryFee = DELIVERY_FEE
 
 const selectedSizeData = computed(() => {
   return sizes.find(s => s.value === selectedSize.value)
@@ -280,7 +269,6 @@ const addToCart = () => {
     flavors: flavorsArray,
     price: selectedSizeData.value.price,
     quantity: quantity.value,
-    deliveryFee: deliveryFee,
     birthdayName: birthdayName.value || null,
     birthdayAge: birthdayAge.value || null,
     cakeTheme: cakeTheme.value || null,
@@ -295,6 +283,10 @@ const addToCart = () => {
   birthdayAge.value = null
   cakeTheme.value = ''
 }
+
+onMounted(() => {
+  customCakesStore.fetchConfig()
+})
 </script>
 
 <style scoped>

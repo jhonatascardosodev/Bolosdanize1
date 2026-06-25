@@ -19,7 +19,7 @@ const paths = createPaths(__dirname)
 ensureDirectories(paths.dataDir, paths.uploadsDir)
 
 const db = initDatabase(paths.dbFile, paths.dataFile)
-const app = createApp({ db, uploadsDir: paths.uploadsDir })
+const app = createApp({ db, uploadsDir: paths.uploadsDir, dataDir: paths.dataDir })
 
 const server = app.listen(config.port, () => {
   console.log(`API rodando em http://localhost:${config.port}`)

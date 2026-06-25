@@ -1,5 +1,6 @@
+import { DELIVERY_FEE } from '@/constants/business.js'
+
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '5592991985973'
-const DELIVERY_FEE = 10
 
 function formatCurrency(value) {
   return `R$ ${Number(value).toFixed(2).replace('.', ',')}`

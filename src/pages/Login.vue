@@ -106,6 +106,6 @@ const handleLogin = async () => {
 }
 
 .font-destaque {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-display);
 }
 </style>
