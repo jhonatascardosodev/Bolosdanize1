@@ -6,6 +6,7 @@
           <h2 class="section-title mb-3">Cardápio</h2>
           <div class="section-divider mb-4"></div>
           <p class="section-subtitle">Confira nossos bolos disponíveis</p>
+          <p class="tip-text">Todos com opção de topper decorado com tema</p>
         </v-col>
       </v-row>
 
@@ -107,7 +108,7 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer />
-              <v-btn color="primary" rounded @click.stop="addToCart(bolo)">
+              <v-btn color="primary" rounded @click.stop="openBoloModal(bolo)">
                 <v-icon start>mdi-cart-plus</v-icon>
                 Adicionar
               </v-btn>
@@ -135,7 +136,7 @@
       </v-row>
     </v-container>
 
-    <v-dialog v-model="showModal" :fullscreen="mobile" :max-width="mobile ? undefined : 600">
+    <v-dialog v-model="showModal" :fullscreen="mobile" :max-width="mobile ? undefined : 640">
       <v-card v-if="selectedBolo">
         <ProductImage
           :src="selectedBolo.image"
@@ -148,22 +149,78 @@
           <p class="lead-text mb-4">{{ selectedBolo.description }}</p>
           <p class="body-text mb-4">{{ selectedBolo.fullDescription }}</p>
           <div class="price-text price-large mb-4">R$ {{ selectedBolo.price.toFixed(2) }}</div>
-        </v-card-text>
-        <v-card-actions class="flex-wrap pa-4 gap-2">
+
+          <v-divider class="mb-4" />
+
+          <h3 class="modal-heading mb-3">Topper com decoração</h3>
+          <p class="helper-text mb-4">
+            Informe os dados para o topper do bolo (tema, nome e idade).
+          </p>
+
+          <v-row>
+            <v-col cols="12" sm="4">
+              <v-text-field
+                v-model="topper.name"
+                label="Nome no bolo *"
+                placeholder="Ex: Maria"
+                variant="outlined"
+                density="comfortable"
+                :error-messages="topperErrors.name"
+                hide-details="auto"
+              />
+            </v-col>
+            <v-col cols="12" sm="4">
+              <v-text-field
+                v-model.number="topper.age"
+                type="number"
+                label="Idade *"
+                placeholder="Ex: 10"
+                min="0"
+                max="120"
+                variant="outlined"
+                density="comfortable"
+                :error-messages="topperErrors.age"
+                hide-details="auto"
+              />
+            </v-col>
+            <v-col cols="12" sm="4">
+              <v-text-field
+                v-model="topper.theme"
+                label="Tema da decoração *"
+                placeholder="Ex: Princesa, Futebol..."
+                variant="outlined"
+                density="comfortable"
+                :error-messages="topperErrors.theme"
+                hide-details="auto"
+              />
+            </v-col>
+          </v-row>
+
+          <v-alert type="info" variant="tonal" density="compact" color="primary" class="mt-2">
+            <v-icon size="small" class="mr-1">mdi-information</v-icon>
+            Topper com tema incluso na decoração
+          </v-alert>
+
           <v-text-field
             v-model="modalQuantity"
             type="number"
             label="Quantidade"
             min="1"
             max="10"
+            class="mt-4"
             style="max-width: 150px;"
             variant="outlined"
             density="comfortable"
             hide-details
           />
+        </v-card-text>
+        <v-card-actions class="flex-wrap pa-4 gap-2">
           <v-spacer />
-          <v-btn variant="text" @click="showModal = false">Fechar</v-btn>
-          <v-btn color="primary" @click="addToCartFromModal">Adicionar ao carrinho</v-btn>
+          <v-btn variant="text" @click="closeModal">Fechar</v-btn>
+          <v-btn color="primary" @click="addToCartFromModal">
+            <v-icon start>mdi-cart-plus</v-icon>
+            Adicionar ao carrinho
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -171,7 +228,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useProductsStore } from '@/stores/products'
 import ProductImage from '@/components/ProductImage.vue'
@@ -189,6 +246,16 @@ const allLoaded = ref(false)
 const showModal = ref(false)
 const selectedBolo = ref(null)
 const modalQuantity = ref(1)
+const topper = reactive({
+  name: '',
+  age: null,
+  theme: '',
+})
+const topperErrors = reactive({
+  name: '',
+  age: '',
+  theme: '',
+})
 
 const priceOptions = [
   { label: 'Todos os preços', value: 'all' },
@@ -251,25 +318,56 @@ async function loadMore() {
   await productsStore.fetchCardapioPage(currentPage.value, PAGE_SIZE, true)
 }
 
+function resetTopper() {
+  topper.name = ''
+  topper.age = null
+  topper.theme = ''
+  topperErrors.name = ''
+  topperErrors.age = ''
+  topperErrors.theme = ''
+}
+
+function resetModal() {
+  modalQuantity.value = 1
+  resetTopper()
+}
+
+function closeModal() {
+  showModal.value = false
+  resetModal()
+}
+
+function validateTopper() {
+  topperErrors.name = ''
+  topperErrors.age = ''
+  topperErrors.theme = ''
+
+  if (!topper.name.trim()) topperErrors.name = 'Informe o nome'
+  if (topper.age === null || topper.age === '' || topper.age < 0) {
+    topperErrors.age = 'Informe a idade'
+  }
+  if (!topper.theme.trim()) topperErrors.theme = 'Informe o tema'
+
+  return !topperErrors.name && !topperErrors.age && !topperErrors.theme
+}
+
 function openBoloModal(bolo) {
   selectedBolo.value = bolo
-  modalQuantity.value = 1
+  resetModal()
   showModal.value = true
 }
 
-function addToCart(bolo) {
-  emit('add-to-cart', { ...bolo, quantity: 1 })
-}
-
 function addToCartFromModal() {
-  if (!selectedBolo.value) return
+  if (!selectedBolo.value || !validateTopper()) return
 
   emit('add-to-cart', {
     ...selectedBolo.value,
     quantity: modalQuantity.value,
+    birthdayName: topper.name.trim(),
+    birthdayAge: topper.age,
+    cakeTheme: topper.theme.trim(),
   })
-  showModal.value = false
-  modalQuantity.value = 1
+  closeModal()
 }
 </script>
 
@@ -327,6 +425,25 @@ function addToCartFromModal() {
 
 .price-large {
   font-size: 1.75rem;
+}
+
+.modal-heading {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.tip-text {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+}
+
+.helper-text {
+  font-size: 0.9rem;
+  color: var(--color-text-soft);
+  line-height: 1.55;
 }
 
 .gap-2 {

@@ -11,6 +11,9 @@ import { createAuthRouter } from './routes/auth.js'
 import { createProductsRouter } from './routes/products.js'
 
 import { createCustomCakesRouter } from './routes/customCakes.js'
+import { createCustomersRouter } from './routes/customers.js'
+import { createLoyaltyRouter } from './routes/loyalty.js'
+import { createAdminLoyaltyRouter } from './routes/adminLoyalty.js'
 
 export function createApp({ db, uploadsDir, dataDir }) {
   const app = express()
@@ -37,6 +40,9 @@ export function createApp({ db, uploadsDir, dataDir }) {
   app.use('/api/auth', createAuthRouter(loginLimiter))
   app.use('/api/products', createProductsRouter({ db, upload, uploadsDir }))
   app.use('/api/custom-cakes', createCustomCakesRouter(dataDir))
+  app.use('/api/customers', createCustomersRouter(db, loginLimiter))
+  app.use('/api/loyalty', createLoyaltyRouter(db))
+  app.use('/api/admin/loyalty', createAdminLoyaltyRouter(db))
 
   app.use(createErrorHandler())
   app.use(createNotFoundHandler())

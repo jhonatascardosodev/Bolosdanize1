@@ -34,6 +34,13 @@ export const config = {
     'image/webp',
     'image/gif',
   ]),
+  loyalty: {
+    welcomePoints: Number(process.env.LOYALTY_WELCOME_POINTS) || 50,
+    pointsPerReal: Number(process.env.LOYALTY_POINTS_PER_REAL) || 1,
+    pointsPerRealDiscount: Number(process.env.LOYALTY_POINTS_PER_DISCOUNT) || 10,
+    minRedeemPoints: Number(process.env.LOYALTY_MIN_REDEEM) || 100,
+    maxDiscountPercent: Number(process.env.LOYALTY_MAX_DISCOUNT_PERCENT) || 20,
+  },
 }
 
 function parseCorsOrigins(value) {

@@ -24,6 +24,18 @@ const pageMeta = {
     title: 'Contato',
     description: 'Fale com a Bolos da Nize pelo WhatsApp ou Instagram. Itacoatiara - AM.',
   },
+  ClienteCadastro: {
+    title: 'Cadastro',
+    description: 'Cadastre-se no programa de fidelidade Bolos da Nize e ganhe pontos de desconto.',
+  },
+  ClienteLogin: {
+    title: 'Login',
+    description: 'Entre na sua conta Bolos da Nize e acompanhe seus pontos.',
+  },
+  ClienteConta: {
+    title: 'Minha conta',
+    description: 'Veja seus pontos, histórico e benefícios no programa de fidelidade.',
+  },
 }
 
 function setMetaTag(attribute, key, content) {

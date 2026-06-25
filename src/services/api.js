@@ -2,9 +2,14 @@ import { STORAGE_KEYS } from '@/constants'
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 const TOKEN_KEY = STORAGE_KEYS.TOKEN
+const CUSTOMER_TOKEN_KEY = STORAGE_KEYS.CUSTOMER_TOKEN
 
 export function getToken() {
   return sessionStorage.getItem(TOKEN_KEY)
+}
+
+export function getCustomerToken() {
+  return localStorage.getItem(CUSTOMER_TOKEN_KEY)
 }
 
 export function setToken(token) {
@@ -15,13 +20,25 @@ export function clearToken() {
   sessionStorage.removeItem(TOKEN_KEY)
 }
 
+export function setCustomerToken(token) {
+  localStorage.setItem(CUSTOMER_TOKEN_KEY, token)
+}
+
+export function clearCustomerToken() {
+  localStorage.removeItem(CUSTOMER_TOKEN_KEY)
+}
+
+export function isCustomerLoggedIn() {
+  return !!getCustomerToken()
+}
+
 export function isLoggedIn() {
   return !!getToken()
 }
 
-async function request(path, options = {}) {
+async function request(path, options = {}, { useCustomerToken = false } = {}) {
   const headers = { ...(options.headers || {}) }
-  const token = getToken()
+  const token = useCustomerToken ? getCustomerToken() : getToken()
 
   if (token && !headers.Authorization) {
     headers.Authorization = `Bearer ${token}`
@@ -39,7 +56,11 @@ async function request(path, options = {}) {
   const data = await response.json().catch(() => ({}))
 
   if (response.status === 401) {
-    clearToken()
+    if (useCustomerToken) {
+      clearCustomerToken()
+    } else {
+      clearToken()
+    }
     const error = new Error(data.error || 'Sessão expirada. Faça login novamente.')
     error.status = 401
     throw error
@@ -143,6 +164,90 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
     })
+  },
+
+  registerCustomer(data) {
+    return request('/customers/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+  },
+
+  loginCustomer(email, password) {
+    return request('/customers/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+  },
+
+  getCustomerProfile() {
+    return request('/customers/me', {}, { useCustomerToken: true })
+  },
+
+  getCustomerTransactions() {
+    return request('/customers/me/transactions', {}, { useCustomerToken: true })
+  },
+
+  getLoyaltyRules() {
+    return request('/loyalty/rules')
+  },
+
+  previewLoyalty(data) {
+    return request('/loyalty/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+  },
+
+  completeLoyaltyOrder(data) {
+    return request(
+      '/loyalty/complete-order',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      },
+      { useCustomerToken: true }
+    )
+  },
+
+  getAdminCustomers() {
+    return request('/admin/loyalty/customers')
+  },
+
+  addCustomerPointsAdmin(id, amount, description) {
+    return request(`/admin/loyalty/customers/${id}/points`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, description }),
+    })
+  },
+
+  getPromotions() {
+    return request('/admin/loyalty/promotions')
+  },
+
+  createPromotion(data) {
+    return request('/admin/loyalty/promotions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+  },
+
+  updatePromotion(id, data) {
+    return request(`/admin/loyalty/promotions/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+  },
+
+  deletePromotion(id) {
+    return request(`/admin/loyalty/promotions/${id}`, { method: 'DELETE' })
   },
 }
 

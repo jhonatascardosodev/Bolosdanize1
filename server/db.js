@@ -1,6 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import fs from 'fs'
 import path from 'path'
+import { createCustomerSchema } from './db/customers.js'
 
 const defaultProducts = [
   {
@@ -187,6 +188,7 @@ export function initDatabase(dbPath, jsonFilePath) {
 
   const db = new DatabaseSync(dbPath)
   createSchema(db)
+  createCustomerSchema(db)
 
   const count = db.prepare('SELECT COUNT(*) as total FROM products').get().total
 

@@ -13,8 +13,9 @@ function formatDateTime() {
   }).format(new Date())
 }
 
-export function buildOrderMessage(cartItems, customer = {}) {
-  const { name, phone, address, notes } = customer
+export function buildOrderMessage(cartItems, customer = {}, loyalty = {}) {
+  const { name, phone, address, notes, email } = customer
+  const { discount = 0, pointsRedeemed = 0, pointsEarned = 0 } = loyalty
 
   let message = '🍰 *NOVO PEDIDO — BOLOS DA NIZE*\n\n'
 
@@ -24,6 +25,10 @@ export function buildOrderMessage(cartItems, customer = {}) {
 
   if (phone?.trim()) {
     message += `📱 *Telefone:* ${phone.trim()}\n`
+  }
+
+  if (email?.trim()) {
+    message += `📧 *E-mail:* ${email.trim()}\n`
   }
 
   if (address?.trim()) {
@@ -66,12 +71,23 @@ export function buildOrderMessage(cartItems, customer = {}) {
   })
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const total = subtotal + DELIVERY_FEE
+  const discountValue = Number(discount) || 0
+  const total = Math.max(0, subtotal - discountValue) + DELIVERY_FEE
 
   message += '*━━━ RESUMO ━━━*\n'
   message += `Subtotal: ${formatCurrency(subtotal)}\n`
+
+  if (discountValue > 0) {
+    message += `Desconto (pontos): -${formatCurrency(discountValue)}\n`
+    message += `Pontos usados: ${pointsRedeemed}\n`
+  }
+
   message += `Taxa de entrega: ${formatCurrency(DELIVERY_FEE)}\n`
   message += `*TOTAL: ${formatCurrency(total)}*\n`
+
+  if (pointsEarned > 0) {
+    message += `\n⭐ *Pontos a ganhar:* ${pointsEarned}\n`
+  }
 
   if (notes?.trim()) {
     message += `\n📝 *Observações:*\n${notes.trim()}\n`

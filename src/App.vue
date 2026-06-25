@@ -55,6 +55,15 @@
           
           <v-btn
             icon
+            to="/minha-conta"
+            class="ml-1 text-primary"
+            title="Minha conta / Pontos"
+          >
+            <v-icon>mdi-star-circle-outline</v-icon>
+          </v-btn>
+
+          <v-btn
+            icon
             @click="toggleCart"
             class="ml-2 text-primary"
           >
@@ -66,6 +75,9 @@
 
         <!-- Mobile: carrinho à direita -->
         <div v-if="$vuetify.display.mobile" class="d-flex align-center">
+          <v-btn icon to="/minha-conta" class="text-primary mr-1">
+            <v-icon>mdi-star-circle-outline</v-icon>
+          </v-btn>
           <v-btn
             icon
             @click="toggleCart"
@@ -93,6 +105,16 @@
           @click="drawer = false"
         >
           <v-list-item-title>{{ item.title }}</v-list-item-title>
+        </v-list-item>
+        <v-divider class="my-2" />
+        <v-list-item to="/minha-conta" @click="drawer = false">
+          <template #prepend>
+            <v-icon color="primary">mdi-star-circle</v-icon>
+          </template>
+          <v-list-item-title>Minha conta / Pontos</v-list-item-title>
+        </v-list-item>
+        <v-list-item v-if="!customerAuth.isLoggedIn" to="/cadastro" @click="drawer = false">
+          <v-list-item-title>Cadastre-se</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -147,12 +169,14 @@
 import { ref, computed, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
+import { useCustomerAuthStore } from '@/stores/customerAuth'
 import CarrinhoDrawer from './components/CarrinhoDrawer.vue'
 import WhatsAppFab from './components/WhatsAppFab.vue'
 import logo from './assets/logo solo 1.png'
 
 const route = useRoute()
 const cartStore = useCartStore()
+const customerAuth = useCustomerAuthStore()
 
 const drawer = ref(false)
 const showCart = ref(false)

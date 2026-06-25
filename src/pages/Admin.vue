@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useProductsStore } from '@/stores/products'
 import ProductImage from '@/components/ProductImage.vue'
 import AdminCustomCakes from '@/components/AdminCustomCakes.vue'
+import AdminLoyalty from '@/components/AdminLoyalty.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -286,6 +287,7 @@ onMounted(async () => {
       <v-tabs v-model="adminTab" color="primary" class="mb-4">
         <v-tab value="products">Produtos do cardápio</v-tab>
         <v-tab value="custom">Bolos personalizados</v-tab>
+        <v-tab value="loyalty">Fidelidade</v-tab>
       </v-tabs>
 
       <v-window v-model="adminTab">
@@ -453,6 +455,14 @@ onMounted(async () => {
           <v-row>
             <v-col cols="12">
               <AdminCustomCakes />
+            </v-col>
+          </v-row>
+        </v-window-item>
+
+        <v-window-item value="loyalty">
+          <v-row>
+            <v-col cols="12">
+              <AdminLoyalty />
             </v-col>
           </v-row>
         </v-window-item>

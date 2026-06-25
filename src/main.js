@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify'
 import { useAuthStore } from './stores/auth'
+import { useCustomerAuthStore } from './stores/customerAuth'
 import '@mdi/font/css/materialdesignicons.css'
 import './style.css'
 
@@ -15,5 +16,6 @@ app.use(router)
 app.use(vuetify)
 
 useAuthStore(pinia).restoreSession()
+useCustomerAuthStore(pinia).restoreSession()
 
 app.mount('#app')
